@@ -2,6 +2,7 @@ package ru.bicev.ReportGenerator.queue;
 
 import java.io.File;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -23,6 +24,7 @@ public class ReportTaskQueue {
 
     private final BlockingQueue<ReportTask> queue = new LinkedBlockingQueue<>();
     private final Map<String, TaskStatus> statusMap = new ConcurrentHashMap<>();
+    private final Map<String, File> filesMap = new ConcurrentHashMap<>();
 
     private final ExecutorService executor;
     private final ExcelReportGenerator generator;
@@ -50,6 +52,7 @@ public class ReportTaskQueue {
                         statusMap.put(task.getReportId(), TaskStatus.IN_PROGRESS);
                         File file = generator.generateReport(task.getData(), task.getReportId());
                         statusMap.put(task.getReportId(), TaskStatus.DONE);
+                        filesMap.put(task.getReportId(), file);
                     } catch (Exception e) {
 
                         if (task != null) {
@@ -74,11 +77,9 @@ public class ReportTaskQueue {
 
     }
 
-    /*
-    To-do add map of taskId - Files to return file by taskId 
-    public File getReportFile(String reportId) {
+    public Optional<File> getReportFile(String reportId) {
+        return Optional.ofNullable(filesMap.getOrDefault(reportId, null));
     }
-    */
 
     public void submitTask(ReportTask task) {
         statusMap.put(task.getReportId(), TaskStatus.PENDING);
