@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: ReportGenerator
+report:
+  subtypes:
+    - class-name: ru.bicev.ReportGenerator.dto.ReportDto
+      name: report
