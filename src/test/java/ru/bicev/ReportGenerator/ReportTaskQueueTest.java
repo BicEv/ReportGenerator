@@ -57,14 +57,7 @@ public class ReportTaskQueueTest {
 
         TaskStatus status = null;
 
-        int retries = 20;
-        while (retries-- > 0) {
-            status = queue.getStatus(reportId);
-            if (status == TaskStatus.DONE || status == TaskStatus.FAILED) {
-                break;
-            }
-            Thread.sleep(100);
-        }
+        status = waitForStatus(reportId, TaskStatus.DONE, queue);
 
         assertEquals(TaskStatus.DONE, status);
 
@@ -79,12 +72,7 @@ public class ReportTaskQueueTest {
 
         queue.submitTask(task);
 
-        int retries = 20;
-        while (retries-- > 0) {
-            if (queue.getStatus(reportId) == TaskStatus.DONE)
-                break;
-            Thread.sleep(100);
-        }
+        waitForStatus(reportId, TaskStatus.DONE, queue);
 
         Optional<File> optFile = queue.getReportFile(reportId);
 
@@ -126,17 +114,24 @@ public class ReportTaskQueueTest {
 
         brokenQueue.submitTask(task);
 
-        int retries = 20;
         TaskStatus status = null;
-        while (retries-- > 0) {
-            status = brokenQueue.getStatus(reportId);
-            if (status == TaskStatus.FAILED)
-                break;
-            Thread.sleep(100);
-        }
+        status = waitForStatus(reportId, TaskStatus.FAILED, brokenQueue);
 
         assertEquals(TaskStatus.FAILED, status);
         brokenQueue.shutdown();
+    }
+
+    private TaskStatus waitForStatus(String reportId, TaskStatus expected, ReportTaskQueue queue)
+            throws InterruptedException {
+        int retries = 20;
+        while (retries-- > 0) {
+            TaskStatus status = queue.getStatus(reportId);
+            if (status == expected) {
+                return status;
+            }
+            Thread.sleep(100);
+        }
+        return queue.getStatus(reportId);
     }
 
 }
