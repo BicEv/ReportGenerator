@@ -34,6 +34,10 @@ public class ExcelReportGenerator {
         createHeaderRows(data.get(0), workbook, sheet);
         fillDataRows(data, sheet);
 
+        for (int i = 0; i < data.get(0).getHeaders().size(); i++) {
+            sheet.autoSizeColumn(i);
+        }
+
         Path reportsDir = Paths.get("reports");
         if (!Files.exists(reportsDir)) {
             Files.createDirectories(reportsDir);
